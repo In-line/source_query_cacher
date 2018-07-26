@@ -1,0 +1,12 @@
+[package]
+name = "SourceQueryCacher"
+version = "0.1.0"
+authors = ["Alik Aslanyan <cplusplus256@gmail.com>"]
+
+[dependencies]
+tokio = "0.1.7"
+tokio-codec = "0.1"
+futures = "0.1"
+enum_primitive = "0.1.1"
+num = "0.2.0"
+bytes = "0.4.8"
