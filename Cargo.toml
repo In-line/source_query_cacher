@@ -1,12 +1,23 @@
 [package]
-name = "SourceQueryCacher"
+name = "source_query_cacher"
 version = "0.1.0"
 authors = ["Alik Aslanyan <cplusplus256@gmail.com>"]
 
+[profile.release]
+lto = true
+
 [dependencies]
-tokio = "0.1.7"
-tokio-codec = "0.1"
-futures = "0.1"
+tokio = "0.1.8"
+tokio-codec = "0.1.0"
+bytes = "0.4.8"
+futures = "0.1.23"
+futures-retry = "0.2.1"
 enum_primitive = "0.1.1"
 num = "0.2.0"
-bytes = "0.4.8"
+log = "0.4.0"
+env_logger = "0.5.11"
+byteorder = "1.2.4"
+fnv = "1.0.3"
+rand = "0.5"
+lru_time_cache = "0.8.0"
+structopt = "0.2"
