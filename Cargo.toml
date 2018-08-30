@@ -2,6 +2,7 @@
 name = "source_query_cacher"
 version = "0.1.0"
 authors = ["Alik Aslanyan <cplusplus256@gmail.com>"]
+license = "GPL-3.0"
 
 [profile.release]
 lto = true
@@ -21,3 +22,5 @@ fnv = "1.0.3"
 rand = "0.5"
 lru_time_cache = "0.8.0"
 structopt = "0.2"
+itertools = "0.7.3"
+tokio-threadpool = "0.1.6"
