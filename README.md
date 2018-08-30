@@ -1,4 +1,5 @@
-# source_query_cacher
+# source_query_cacher [![Build Status](https://travis-ci.org/In-line/source_query_cacher.svg?branch=master)](https://travis-ci.org/In-line/source_query_cacher)
+
 Written in Rust, with love and care using Tokio framework. Should be as fast as hell, or slow as hell. I don't know, but you should try to use it anyway :)
 
 ```
