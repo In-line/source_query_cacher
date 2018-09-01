@@ -56,40 +56,40 @@ struct Options {
 }
 
 #[derive(Debug)]
-enum ProxyServerPairParseError {
-    InvalidProxyAddr(String, String),
-    InvalidServerAddr(String, String),
-    InvalidFormat(String),
+enum InvalidProxyServerPairParseError {
+    ProxyAddr(String, String),
+    ServerAddr(String, String),
+    Format(String),
 }
 
-impl std::fmt::Display for ProxyServerPairParseError {
+impl std::fmt::Display for InvalidProxyServerPairParseError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         match self {
-            ProxyServerPairParseError::InvalidProxyAddr(full, proxy) =>
+            InvalidProxyServerPairParseError::ProxyAddr(full, proxy) =>
                write!(f, "Can't parse proxy addr. Tried to parse \"{}\" which is the first part of \"{}\"", proxy, full),
-            ProxyServerPairParseError::InvalidServerAddr(full, server) =>
+            InvalidProxyServerPairParseError::ServerAddr(full, server) =>
                 write!(f, "Can't parse server addr. Tried to parse \"{}\" which is the second part of \"{}\"", server, full),
-            ProxyServerPairParseError::InvalidFormat(full) =>
+            InvalidProxyServerPairParseError::Format(full) =>
                 write!(f, "Can't parse pair of addrs. Tried to parse \"{}\" which can't be split by space to two parts. Valid syntax is \"PROXY:PORT SERVER:PORT\" ", full),
         }
     }
 }
 
-impl std::error::Error for ProxyServerPairParseError {}
+impl std::error::Error for InvalidProxyServerPairParseError {}
 
 impl std::str::FromStr for ServerClientPair {
-    type Err = ProxyServerPairParseError;
+    type Err = InvalidProxyServerPairParseError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let splitted: Vec<&str> = s.split(' ').collect();
         if splitted.len() != 2 {
-            Err(ProxyServerPairParseError::InvalidFormat(s.into()))
+            Err(InvalidProxyServerPairParseError::Format(s.into()))
         } else {
             Ok(ServerClientPair {
                 proxy: splitted[0].parse().map_err(|_| {
-                    ProxyServerPairParseError::InvalidProxyAddr(s.into(), splitted[0].into())
+                    InvalidProxyServerPairParseError::ProxyAddr(s.into(), splitted[0].into())
                 })?,
                 server: splitted[1].parse().map_err(|_| {
-                    ProxyServerPairParseError::InvalidServerAddr(s.into(), splitted[1].into())
+                    InvalidProxyServerPairParseError::ServerAddr(s.into(), splitted[1].into())
                 })?,
             })
         }
@@ -112,8 +112,7 @@ fn main() {
         .into_iter()
         .map(|chunk| {
             chunk
-                .into_iter()
-                .map(|it| it.clone())
+                .cloned()
                 .collect::<Vec<ServerClientPair>>()
         }).collect::<Vec<_>>()
         .into_iter()

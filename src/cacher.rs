@@ -101,7 +101,7 @@ impl Cacher {
     }
 
     fn gc(&mut self) {
-        for (header, queue) in self.clients_in_queue.iter_mut() {
+        for (header, queue) in &mut self.clients_in_queue {
             if queue.len() > 1000 {
                 info!("Clients queue for header {:?} seems to be full. Maybe server didn't respond? Removing {} clients. Server addr: {}", header, queue.len(), self.server_addr);
                 queue.clear();
