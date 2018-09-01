@@ -72,7 +72,7 @@ matrix:
 
 before_deploy:
 - cargo build --release
-- cp target/$TARGET/release/bin source_query_cacher
+- cp target/release/bin source_query_cacher
 - tar czf ${PROJECT_NAME}-${TRAVIS_TAG}-${TARGET}.tar.gz source_query_cacher
 
 deploy:
