@@ -9,7 +9,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="685a32fc-aa5f-4ba2-9155-c9cb91cac344" name="Default" comment="" />
+    <list default="true" id="685a32fc-aa5f-4ba2-9155-c9cb91cac344" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -68,55 +71,58 @@
     <session id="-421261376">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="20" />
+          <entry key="project.closed" value="22" />
           <entry key="project.open.time.0" value="1" />
           <entry key="project.open.time.10" value="5" />
           <entry key="project.open.time.11" value="2" />
           <entry key="project.open.time.12" value="1" />
           <entry key="project.open.time.13" value="1" />
+          <entry key="project.open.time.14" value="1" />
           <entry key="project.open.time.15" value="1" />
           <entry key="project.open.time.2" value="1" />
           <entry key="project.open.time.23" value="1" />
-          <entry key="project.open.time.8" value="5" />
+          <entry key="project.open.time.8" value="6" />
           <entry key="project.open.time.9" value="4" />
-          <entry key="project.opened" value="22" />
+          <entry key="project.opened" value="24" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
           <entry key="Run bin (disassembly)" value="5" />
+          <entry key="gitignore" value="1" />
           <entry key="groovy" value="1" />
           <entry key="lock" value="1" />
-          <entry key="rs" value="247" />
-          <entry key="toml" value="10" />
+          <entry key="rs" value="251" />
+          <entry key="toml" value="11" />
           <entry key="vmoptions" value="4" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
           <entry key="Disassembly" value="5" />
+          <entry key="Git file" value="1" />
           <entry key="PLAIN_TEXT" value="4" />
-          <entry key="Rust" value="247" />
+          <entry key="Rust" value="251" />
           <entry key="Scratch" value="1" />
-          <entry key="TOML file" value="11" />
+          <entry key="TOML file" value="12" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
           <entry key="GDB" value="1" />
           <entry key="bar" value="6" />
-          <entry key="rs" value="40313" />
-          <entry key="toml" value="127" />
-          <entry key="txt" value="214" />
+          <entry key="rs" value="40392" />
+          <entry key="toml" value="128" />
+          <entry key="txt" value="245" />
           <entry key="vmoptions" value="10" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="GDBCommands" value="1" />
-          <entry key="PLAIN_TEXT" value="230" />
-          <entry key="Rust" value="40313" />
-          <entry key="TOML file" value="127" />
+          <entry key="PLAIN_TEXT" value="261" />
+          <entry key="Rust" value="40392" />
+          <entry key="TOML file" value="128" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.cidr.testingFrameworks.usages" />
@@ -127,73 +133,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/cacher.rs">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="780">
-              <caret line="139" selection-start-line="139" selection-end-line="139" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$USER_HOME$/.rustup/toolchains/beta-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/src/libstd/time.rs">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-880">
-              <caret line="462" column="17" selection-start-line="462" selection-start-column="10" selection-end-line="462" selection-end-column="17" />
-              <folding>
-                <element signature="e#5454#5455#0" expanded="true" />
-                <element signature="e#5498#5499#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$USER_HOME$/.rustup/toolchains/beta-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/src/libcore/cmp.rs">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="515">
-              <caret line="213" column="9" selection-start-line="213" selection-start-column="9" selection-end-line="213" selection-end-column="9" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/lib.rs">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="192">
-              <caret line="12" column="13" selection-start-line="12" selection-start-column="13" selection-end-line="12" selection-end-column="13" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/util.rs">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="515">
-              <caret line="85" column="28" selection-start-line="85" selection-start-column="28" selection-end-line="85" selection-end-column="28" />
-              <folding>
-                <element signature="e#4206#4207#0" expanded="true" />
-                <element signature="e#4241#4242#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Cargo.toml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="352">
-              <caret line="22" column="17" selection-start-line="22" selection-start-column="17" selection-end-line="22" selection-end-column="17" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/bin/bin.rs">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1424">
-              <caret line="89" selection-start-line="89" selection-end-line="89" />
+            <state relative-caret-position="701">
+              <caret line="139" lean-forward="true" selection-start-line="139" selection-end-line="139" />
             </state>
           </provider>
         </entry>
@@ -201,8 +145,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/frame.rs">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="27">
-              <caret line="28" selection-start-line="28" selection-end-line="28" />
+            <state relative-caret-position="880">
+              <caret line="55" column="9" lean-forward="true" selection-start-line="55" selection-start-column="9" selection-end-line="55" selection-end-column="9" />
               <folding>
                 <element signature="e#421#422#0" expanded="true" />
                 <element signature="e#449#450#0" expanded="true" />
@@ -285,10 +229,10 @@
         <option value="$PROJECT_DIR$/src/source_query.rs" />
         <option value="$PROJECT_DIR$/src/frame.rs" />
         <option value="$PROJECT_DIR$/src/util.rs" />
-        <option value="$PROJECT_DIR$/src/cacher.rs" />
         <option value="$PROJECT_DIR$/src/lib.rs" />
-        <option value="$PROJECT_DIR$/Cargo.toml" />
+        <option value="$PROJECT_DIR$/src/cacher.rs" />
         <option value="$PROJECT_DIR$/src/bin/bin.rs" />
+        <option value="$PROJECT_DIR$/Cargo.toml" />
       </list>
     </option>
   </component>
@@ -302,8 +246,8 @@
     <packageJsonPaths />
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="490" />
-    <option name="y" value="119" />
+    <option name="x" value="254" />
+    <option name="y" value="197" />
     <option name="width" value="1084" />
     <option name="height" value="824" />
   </component>
@@ -344,6 +288,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -388,16 +333,16 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file:///home/alik/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-io-0.1.7/src/codec/decoder.rs" />
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="add_unversioned_files" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
     <property name="restartRequiresConfirmation" value="false" />
-    <property name="settings.editor.selected.configurable" value="Debugger.Rust" />
+    <property name="settings.editor.selected.configurable" value="language.rust.rustfmt" />
   </component>
   <component name="PyConsoleOptionsProvider">
     <option name="myShowDebugConsoleByDefault" value="true" />
@@ -420,6 +365,15 @@
     </option>
   </component>
   <component name="RunManager" selected="Cargo Command.Run bin">
+    <configuration name="Clippy (2018-08-28)" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
+      <option name="channel" value="DEFAULT" />
+      <option name="command" value="+nightly-2018-08-28 clippy" />
+      <option name="nocapture" value="true" />
+      <option name="backtrace" value="SHORT" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <envs />
+      <method v="2" />
+    </configuration>
     <configuration name="Run bin" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
       <option name="channel" value="DEFAULT" />
       <option name="command" value="run --package source_query_cacher --bin bin" />
@@ -460,6 +414,15 @@
       <envs />
       <method v="2" />
     </configuration>
+    <configuration default="true" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
+      <option name="channel" value="DEFAULT" />
+      <option name="command" value="+nightly-2018-08-28 clippy" />
+      <option name="nocapture" value="true" />
+      <option name="backtrace" value="SHORT" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <envs />
+      <method v="2" />
+    </configuration>
     <configuration name="clippy" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
       <option name="channel" value="NIGHTLY" />
       <option name="command" value="clippy" />
@@ -470,6 +433,7 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="Cargo Command.Clippy (2018-08-28)" />
       <item itemvalue="Cargo Command.Test cached_query::tests" />
       <item itemvalue="Cargo Command.+nightly" />
       <item itemvalue="Cargo Command.Test cached_query::tests::test_decoder" />
@@ -479,9 +443,9 @@
     <recent_temporary>
       <list>
         <item itemvalue="Cargo Command.Run bin" />
-        <item itemvalue="Cargo Command.clippy" />
-        <item itemvalue="Cargo Command.clippy" />
         <item itemvalue="Cargo Command.+nightly" />
+        <item itemvalue="Cargo Command.clippy" />
+        <item itemvalue="Cargo Command.clippy" />
         <item itemvalue="Cargo Command.clippy" />
       </list>
     </recent_temporary>
@@ -539,11 +503,13 @@
       <workItem from="1535129509972" duration="35867000" />
       <workItem from="1535568630307" duration="55000" />
       <workItem from="1535568711141" duration="7837000" />
+      <workItem from="1535652380320" duration="1993000" />
+      <workItem from="1535819457296" duration="2488000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="273335000" />
+    <option name="totallyTimeSpent" value="279345000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -555,49 +521,50 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="0" width="1920" height="1044" extended-state="6" />
+    <frame x="-4" y="0" width="1928" height="1048" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49945354" visible="true" weight="0.07257204" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49945354" visible="true" weight="0.112059765" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" sideWeight="0.50054646" side_tool="true" weight="0.15795091" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32896176" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.8146301" visible="true" weight="0.3420765" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49958438" weight="0.452459" />
+      <window_info anchor="bottom" id="Debug" order="2" sideWeight="0.49958438" weight="0.452459" />
+      <window_info anchor="bottom" id="Run" order="3" sideWeight="0.81128746" weight="0.3420765" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" sideWeight="0.49875313" weight="0.32896176" />
-      <window_info anchor="bottom" id="Terminal" order="7" sideWeight="0.77888614" weight="0.26557377" />
-      <window_info anchor="bottom" id="Event Log" order="8" sideWeight="0.18536991" side_tool="true" visible="true" weight="0.3420765" />
+      <window_info anchor="bottom" id="Terminal" order="7" sideWeight="0.4850088" weight="0.26994535" />
+      <window_info anchor="bottom" id="Event Log" order="8" sideWeight="0.51499116" side_tool="true" weight="0.26994535" />
       <window_info anchor="bottom" id="Version Control" order="9" sideWeight="0.49893278" weight="0.32896176" />
       <window_info anchor="bottom" id="Database Changes" order="10" show_stripe_button="false" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-      <window_info anchor="right" id="Cargo" order="3" sideWeight="0.49833888" visible="true" weight="0.2854856" />
+      <window_info anchor="right" id="Cargo" order="3" sideWeight="0.49833888" weight="0.2828175" />
       <window_info anchor="right" id="Key Promoter X" order="4" />
       <window_info anchor="right" x="0" y="0" width="430" height="844" id="Documentation" order="5" sideWeight="0.5016611" side_tool="true" weight="0.32977587" />
       <window_info anchor="right" id="Database" order="6" sideWeight="0.49833888" weight="0.32977587" />
     </layout>
     <layout-to-restore>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.15635005" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49945354" visible="true" weight="0.112059765" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info id="Favorites" order="2" sideWeight="0.50054646" side_tool="true" weight="0.15795091" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32896176" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.6872999" weight="0.15191257" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.452459" />
+      <window_info anchor="bottom" id="Debug" order="2" sideWeight="0.49958438" weight="0.452459" />
+      <window_info anchor="bottom" id="Run" order="3" sideWeight="0.81128746" weight="0.3420765" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="6" weight="0.32896176" />
-      <window_info anchor="bottom" id="Terminal" order="7" sideWeight="0.49560633" weight="0.38469946" />
-      <window_info anchor="bottom" id="Event Log" order="8" sideWeight="0.3127001" side_tool="true" weight="0.3420765" />
+      <window_info anchor="bottom" id="TODO" order="6" sideWeight="0.49875313" weight="0.32896176" />
+      <window_info anchor="bottom" id="Terminal" order="7" sideWeight="0.4850088" visible="true" weight="0.26994535" />
+      <window_info anchor="bottom" id="Event Log" order="8" sideWeight="0.51499116" side_tool="true" visible="true" weight="0.26994535" />
       <window_info anchor="bottom" id="Version Control" order="9" sideWeight="0.49893278" weight="0.32896176" />
       <window_info anchor="bottom" id="Database Changes" order="10" show_stripe_button="false" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-      <window_info anchor="right" id="Cargo" order="3" sideWeight="0.49833888" weight="0.16275346" />
+      <window_info anchor="right" id="Cargo" order="3" sideWeight="0.49833888" visible="true" weight="0.2828175" />
       <window_info anchor="right" id="Key Promoter X" order="4" />
       <window_info anchor="right" x="0" y="0" width="430" height="844" id="Documentation" order="5" sideWeight="0.5016611" side_tool="true" weight="0.32977587" />
       <window_info anchor="right" id="Database" order="6" sideWeight="0.49833888" weight="0.32977587" />
@@ -660,11 +627,6 @@
           <line>80</line>
           <option name="timeStamp" value="14" />
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/src/frame.rs</url>
-          <line>42</line>
-          <option name="timeStamp" value="22" />
-        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <watches-manager>
@@ -692,35 +654,6 @@
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/request_query.rs" />
-    <entry file="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/num-traits-0.1.43/src/lib.rs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="197">
-          <caret line="27" column="38" lean-forward="true" selection-start-line="27" selection-start-column="38" selection-end-line="27" selection-end-column="38" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.rustup/toolchains/beta-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/src/libcore/convert.rs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="215">
-          <caret line="310" column="7" selection-start-line="310" selection-start-column="7" selection-end-line="310" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-0.1.23/src/sink/send.rs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="261">
-          <caret line="41" column="26" selection-start-line="41" selection-start-column="26" selection-end-line="41" selection-end-column="26" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/futures-0.1.23/src/sink/mod.rs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="432">
-          <caret line="121" column="9" selection-start-line="121" selection-start-column="9" selection-end-line="121" selection-end-column="9" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/byteorder-1.2.4/src/io.rs">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="215">
@@ -903,13 +836,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/source_query.rs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="376">
-          <caret line="84" column="60" selection-start-line="84" selection-start-column="25" selection-end-line="84" selection-end-column="60" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$APPLICATION_CONFIG_DIR$/extensions/com.intellij.database/schema/Generate POJOs.groovy">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-652" />
@@ -940,10 +866,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="205">
           <caret line="78" column="9" selection-start-line="78" selection-start-column="9" selection-end-line="78" selection-end-column="9" />
-          <folding>
-            <element signature="e#122255#122256#0" expanded="true" />
-            <element signature="e#122293#122294#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -975,13 +897,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/lib.rs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="192">
-          <caret line="12" column="13" selection-start-line="12" selection-start-column="13" selection-end-line="12" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/.rustup/toolchains/beta-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/src/libcore/cmp.rs">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="515">
@@ -996,32 +911,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Cargo.toml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="352">
-          <caret line="22" column="17" selection-start-line="22" selection-start-column="17" selection-end-line="22" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/frame.rs">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="27">
-          <caret line="28" selection-start-line="28" selection-end-line="28" />
-          <folding>
-            <element signature="e#421#422#0" expanded="true" />
-            <element signature="e#449#450#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/.rustup/toolchains/beta-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/src/libstd/time.rs">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-880">
           <caret line="462" column="17" selection-start-line="462" selection-start-column="10" selection-end-line="462" selection-end-column="17" />
-          <folding>
-            <element signature="e#5454#5455#0" expanded="true" />
-            <element signature="e#5498#5499#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1032,17 +925,38 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/cacher.rs">
+    <entry file="file://$PROJECT_DIR$/src/source_query.rs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="780">
-          <caret line="139" selection-start-line="139" selection-end-line="139" />
+        <state>
+          <caret column="20" selection-start-column="20" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-0.1.8/src/executor/mod.rs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2048">
+          <caret line="128" selection-start-line="128" selection-end-line="128" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="128">
+          <caret line="8" column="32" lean-forward="true" selection-start-line="8" selection-start-column="32" selection-end-line="8" selection-end-column="32" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-threadpool-0.1.6/src/builder.rs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1">
+          <caret line="106" column="36" selection-start-line="106" selection-start-column="36" selection-end-line="106" selection-end-column="36" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/util.rs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="515">
-          <caret line="85" column="28" selection-start-line="85" selection-start-column="28" selection-end-line="85" selection-end-column="28" />
+        <state relative-caret-position="-249">
+          <caret line="79" column="22" lean-forward="true" selection-start-line="79" selection-start-column="22" selection-end-line="79" selection-end-column="22" />
           <folding>
             <element signature="e#4206#4207#0" expanded="true" />
             <element signature="e#4241#4242#0" expanded="true" />
@@ -1050,10 +964,52 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$USER_HOME$/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-threadpool-0.1.6/src/thread_pool.rs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="326">
+          <caret line="26" column="17" selection-start-line="26" selection-start-column="17" selection-end-line="26" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Cargo.lock">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Cargo.toml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="32">
+          <caret line="2" column="16" selection-start-line="2" selection-start-column="16" selection-end-line="2" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/frame.rs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="880">
+          <caret line="55" column="9" lean-forward="true" selection-start-line="55" selection-start-column="9" selection-end-line="55" selection-end-column="9" />
+          <folding>
+            <element signature="e#421#422#0" expanded="true" />
+            <element signature="e#449#450#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/bin/bin.rs">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1424">
-          <caret line="89" selection-start-line="89" selection-end-line="89" />
+        <state relative-caret-position="725">
+          <caret line="52" column="6" lean-forward="true" selection-start-line="52" selection-start-column="6" selection-end-line="52" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/lib.rs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="12" selection-start-column="12" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/cacher.rs">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="701">
+          <caret line="139" lean-forward="true" selection-start-line="139" selection-end-line="139" />
         </state>
       </provider>
     </entry>
