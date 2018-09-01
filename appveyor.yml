@@ -120,3 +120,27 @@ build: false
 test_script:
   - cargo test --all --verbose %cargoflags%
   - cargo build --all --verbose %cargoflags%
+
+
+before_deploy:
+- cargo build --release
+- mkdir staging
+- copy target\release\bin.exe staging
+- cd staging
+- rename bin.exe source_query_cacher.exe
+- 7z a ../%PROJECT_NAME%-%APPVEYOR_REPO_TAG_NAME%-%TARGET%.zip *
+- appveyor PushArtifact ../%PROJECT_NAME%-%APPVEYOR_REPO_TAG_NAME%-%TARGET%.zip
+
+deploy:
+    description: 'Windows release'
+    # All the zipped artifacts will be deployed
+    artifact: /.*\.zip/
+    auth_token:
+        secure: Veea/OABbf3MWamopYxh9bcYMNL5TrVd4GIBssZmUBjEgHni7NBdFlYVHxgcuPBU
+    provider: GitHub
+    # deploy when a new tag is pushed and only on the stable channel
+    on:
+        # channel to use to produce the release artifacts
+        # NOTE make sure you only release *once* per target
+        CHANNEL: stable
+appveyor_repo_tag: true
