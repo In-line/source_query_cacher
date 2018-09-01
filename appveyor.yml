@@ -128,8 +128,8 @@ before_deploy:
 - copy target\release\bin.exe staging
 - cd staging
 - rename bin.exe source_query_cacher.exe
-- 7z a ../%PROJECT_NAME%-%APPVEYOR_REPO_COMMIT%-%TARGET%.zip *
-- appveyor PushArtifact ../%PROJECT_NAME%-%APPVEYOR_REPO_COMMIT%-%TARGET%.zip
+- 7z a ../%PROJECT_NAME%-%APPVEYOR_REPO_TAG_NAME%-%TARGET%.zip *
+- appveyor PushArtifact ../%PROJECT_NAME%-%APPVEYOR_REPO_TAG_NAME%-%TARGET%.zip
 
 deploy:
     description: 'Windows release'
@@ -138,8 +138,10 @@ deploy:
     auth_token:
         secure: Veea/OABbf3MWamopYxh9bcYMNL5TrVd4GIBssZmUBjEgHni7NBdFlYVHxgcuPBU
     provider: GitHub
+    force_update։ true
     # deploy when a new tag is pushed and only on the stable channel
     on:
         # channel to use to produce the release artifacts
         # NOTE make sure you only release *once* per target
         CHANNEL: stable
+        appveyor_repo_tag: true
