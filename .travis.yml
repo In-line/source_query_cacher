@@ -73,14 +73,14 @@ matrix:
 before_deploy:
 - cargo build --release
 - cp target/release/bin source_query_cacher
-- tar czf ${PROJECT_NAME}-${TRAVIS_TAG}-${TARGET}.tar.gz source_query_cacher
+- tar czf source_query_cacher-${TRAVIS_TAG}-${TARGET}.tar.gz source_query_cacher
 
 deploy:
   provider: releases
   api_key:
     secure: fBN45YmtXPY0tdAYyWPFJzmWKWKn/221pBWcS8CVvVU7MLKkKlUwqwc4mGL9lJ9GQw8KGm4m8u4jeUAYuYgkq8wNkIqcw9BJhjExaQHO4FOtM4Jh7RnVLd877PO0x1zcsFYAdVHLta6SoVoVgYh51krmLfe/SOvIxnJUSEuWXzV4B4P3hGmxnIn9iW/dbbS4f/rBzsrKa5Ft6eldNE8Sg94RWEB4VG3DkMV8YgEGxPqruWLlRAwev3pDSj0vYxWpIihATrHbg5rdVrw7LFiag8QMWCwvMv/pz7cWfhAe2iwerqGGGwsDym4QDdT3VsvAbSREDEiCiZ3paCxbS7L0qVAN9ea6MkTzJK6b/BmE8gPGNlSuewcC0uGgNDOiv5uUGHQzgYwNHnc/VH/o0kdKDnf7TQRNKPSz9jTT94awIlDY4a6b/WLCxFuPus4+iKJKqqTBnh1UjO08/EWhk63lQ92BScC0iEiCFWu1aYvDglzvsNPqjzggB5HTmckns5HJVxGnttGuGYhBsN9y4cGHH9Z+IsWzLti12smyU3vQelkW/bYUdp8vyg8A/CAu9pbaZWdo+iMdlAqxgI+IrODaaYJpuZF2mF2DxnlIpdbI1pX9AOqlEKdwgSeSo9JjzuaHNINof24eCJfXi38Gm69Fo9/IB/e+14b9DcU4ox1s200=
   file_glob: true
-  file: ${PROJECT_NAME}-${TRAVIS_TAG}-${TARGET}.tar.gz
+  file: source_query_cacher-${TRAVIS_TAG}-${TARGET}.tar.gz
   # don't delete the artifacts from previous phases
   skip_cleanup: true
   # deploy when a new tag is pushed
