@@ -138,7 +138,7 @@ deploy:
     auth_token:
         secure: Veea/OABbf3MWamopYxh9bcYMNL5TrVd4GIBssZmUBjEgHni7NBdFlYVHxgcuPBU
     provider: GitHub
-    force_update։ true
+    force_update: true
     # deploy when a new tag is pushed and only on the stable channel
     on:
         # channel to use to produce the release artifacts
