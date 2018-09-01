@@ -128,8 +128,8 @@ before_deploy:
 - copy target\release\bin.exe staging
 - cd staging
 - rename bin.exe source_query_cacher.exe
-- 7z a ../%PROJECT_NAME%-%APPVEYOR_REPO_TAG_NAME%-%TARGET%.zip *
-- appveyor PushArtifact ../%PROJECT_NAME%-%APPVEYOR_REPO_TAG_NAME%-%TARGET%.zip
+- 7z a ../source_query_cacher-%APPVEYOR_REPO_TAG_NAME%-%TARGET%.zip *
+- appveyor PushArtifact ../source_query_cacher-%APPVEYOR_REPO_TAG_NAME%-%TARGET%.zip
 
 deploy:
     description: 'Windows release'
