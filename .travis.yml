@@ -7,22 +7,22 @@ language: rust
 matrix:
   include:
   # Android
-  - env: TARGET=aarch64-linux-android DISABLE_TESTS=1
-  - env: TARGET=arm-linux-androideabi DISABLE_TESTS=1
-  - env: TARGET=armv7-linux-androideabi DISABLE_TESTS=1
-  - env: TARGET=i686-linux-android DISABLE_TESTS=1
-  - env: TARGET=x86_64-linux-android DISABLE_TESTS=1
+  - env: TARGET=aarch64-linux-android 
+  - env: TARGET=arm-linux-androideabi 
+  - env: TARGET=armv7-linux-androideabi 
+  - env: TARGET=i686-linux-android 
+  - env: TARGET=x86_64-linux-android 
 
   # iOS
-  - env: TARGET=aarch64-apple-ios DISABLE_TESTS=1
+  - env: TARGET=aarch64-apple-ios 
     os: osx
-  - env: TARGET=armv7-apple-ios DISABLE_TESTS=1
+  - env: TARGET=armv7-apple-ios 
     os: osx
-  - env: TARGET=armv7s-apple-ios DISABLE_TESTS=1
+  - env: TARGET=armv7s-apple-ios 
     os: osx
-  - env: TARGET=i386-apple-ios DISABLE_TESTS=1
+  - env: TARGET=i386-apple-ios 
     os: osx
-  - env: TARGET=x86_64-apple-ios DISABLE_TESTS=1
+  - env: TARGET=x86_64-apple-ios 
     os: osx
 
   # Linux
@@ -38,7 +38,7 @@ matrix:
   - env: TARGET=powerpc-unknown-linux-gnu
   - env: TARGET=powerpc64-unknown-linux-gnu
   - env: TARGET=powerpc64le-unknown-linux-gnu
-  - env: TARGET=s390x-unknown-linux-gnu DISABLE_TESTS=1
+  - env: TARGET=s390x-unknown-linux-gnu 
   - env: TARGET=x86_64-unknown-linux-gnu
   - env: TARGET=x86_64-unknown-linux-musl
 
@@ -49,9 +49,9 @@ matrix:
     os: osx
 
   # *BSD
-  - env: TARGET=i686-unknown-freebsd DISABLE_TESTS=1
-  - env: TARGET=x86_64-unknown-freebsd DISABLE_TESTS=1
-  - env: TARGET=x86_64-unknown-netbsd DISABLE_TESTS=1
+  - env: TARGET=i686-unknown-freebsd 
+  - env: TARGET=x86_64-unknown-freebsd 
+  - env: TARGET=x86_64-unknown-netbsd 
 
   # Windows
   - env: TARGET=x86_64-pc-windows-gnu
@@ -66,10 +66,29 @@ matrix:
 
   # Testing other channels
   - env: TARGET=x86_64-unknown-linux-gnu
+    rust: beta
+  - env: TARGET=x86_64-unknown-linux-gnu
     rust: nightly
-  - env: TARGET=x86_64-apple-darwin
-    os: osx
-    rust: nightly
+
+before_deploy:
+- cargo build --target $TARGET --release
+- cp target/$TARGET/release/bin source_query_cacher
+- tar czf ${PROJECT_NAME}-${TRAVIS_TAG}-${TARGET}.tar.gz source_query_cacher
+
+deploy:
+  provider: releases
+  api_key:
+    secure: fBN45YmtXPY0tdAYyWPFJzmWKWKn/221pBWcS8CVvVU7MLKkKlUwqwc4mGL9lJ9GQw8KGm4m8u4jeUAYuYgkq8wNkIqcw9BJhjExaQHO4FOtM4Jh7RnVLd877PO0x1zcsFYAdVHLta6SoVoVgYh51krmLfe/SOvIxnJUSEuWXzV4B4P3hGmxnIn9iW/dbbS4f/rBzsrKa5Ft6eldNE8Sg94RWEB4VG3DkMV8YgEGxPqruWLlRAwev3pDSj0vYxWpIihATrHbg5rdVrw7LFiag8QMWCwvMv/pz7cWfhAe2iwerqGGGwsDym4QDdT3VsvAbSREDEiCiZ3paCxbS7L0qVAN9ea6MkTzJK6b/BmE8gPGNlSuewcC0uGgNDOiv5uUGHQzgYwNHnc/VH/o0kdKDnf7TQRNKPSz9jTT94awIlDY4a6b/WLCxFuPus4+iKJKqqTBnh1UjO08/EWhk63lQ92BScC0iEiCFWu1aYvDglzvsNPqjzggB5HTmckns5HJVxGnttGuGYhBsN9y4cGHH9Z+IsWzLti12smyU3vQelkW/bYUdp8vyg8A/CAu9pbaZWdo+iMdlAqxgI+IrODaaYJpuZF2mF2DxnlIpdbI1pX9AOqlEKdwgSeSo9JjzuaHNINof24eCJfXi38Gm69Fo9/IB/e+14b9DcU4ox1s200=
+  file_glob: true
+  file: ${PROJECT_NAME}-${TRAVIS_TAG}-${TARGET}.tar.gz
+  # don't delete the artifacts from previous phases
+  skip_cleanup: true
+  # deploy when a new tag is pushed
+  on:
+    # channel to use to produce the release artifacts
+    # NOTE make sure you only release *once* per target
+    condition: $TRAVIS_RUST_VERSION = stable
+    tags: true
 
 cache: cargo
 before_cache:
