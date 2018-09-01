@@ -118,14 +118,15 @@ build: false
 #directly or perform other testing commands. Rust will automatically be placed in the PATH
 # environment variable.
 test_script:
-  - cargo test --all --verbose %cargoflags%
-  - cargo build --all --verbose %cargoflags%
+  - rustup target add %TARGET% & exit 0 #
+  - cargo test --target %TARGET%  --verbose %cargoflags%
+  - cargo build --target %TARGET% --verbose %cargoflags%
 
 
 before_deploy:
-- cargo build --release
+- cargo build --release --target %TARGET%
 - mkdir staging
-- copy target\release\bin.exe staging
+- copy target\%TARGET%\release\bin.exe staging
 - cd staging
 - rename bin.exe source_query_cacher.exe
 - 7z a ../source_query_cacher-%APPVEYOR_REPO_TAG_NAME%-%TARGET%.zip *
