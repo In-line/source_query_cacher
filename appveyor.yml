@@ -133,7 +133,7 @@ before_deploy:
 - appveyor PushArtifact ../source_query_cacher-%APPVEYOR_REPO_TAG_NAME%-%TARGET%.zip
 
 deploy:
-    description: 'Windows release'
+    description: 'Release from CI'
     # All the zipped artifacts will be deployed
     artifact: /.*\.zip/
     auth_token:
