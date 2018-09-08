@@ -11,4 +11,4 @@ Cargo.lock
 
 # Other hidden files
 .*
-.idea
+/.idea/
