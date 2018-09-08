@@ -20,7 +20,6 @@ extern crate source_query_cacher;
 extern crate tokio;
 #[macro_use]
 extern crate structopt;
-extern crate tokio_threadpool;
 
 use source_query_cacher::cacher;
 use std::net::SocketAddr;
@@ -29,6 +28,7 @@ use structopt::StructOpt;
 
 use itertools::*;
 use tokio::prelude::future::*;
+use tokio::prelude::stream::*;
 
 #[derive(Debug, StructOpt, Clone)]
 struct ServerClientPair {
@@ -96,35 +96,34 @@ impl std::str::FromStr for ServerClientPair {
     }
 }
 
-use tokio_threadpool::*;
-
 fn main() {
     env_logger::init();
     let options = Options::from_args();
 
     let period = options.update_period;
 
-    let pool = ThreadPool::new();
-    options
-        .list
-        .iter()
-        .chunks(options.chunk_size)
-        .into_iter()
-        .map(|chunk| {
-            chunk
-                .cloned()
-                .collect::<Vec<ServerClientPair>>()
-        }).collect::<Vec<_>>()
-        .into_iter()
-        .for_each(|chunk| {
-            pool.spawn(
-                join_all(chunk.into_iter().map(move |pair| {
-                    cacher::cacher_run(pair.proxy, pair.server, Duration::from_millis(period))
-                        .or_else(|()| futures::future::ok::<(), std::io::Error>(()))
-                })).map(|_| {})
-                .map_err(|_| {}),
-            )
-        });
+    let instance = iter_ok::<_, ()>(
+        options
+            .list
+            .iter()
+            .chunks(options.chunk_size)
+            .into_iter()
+            .map(|chunk| chunk.cloned().collect::<Vec<ServerClientPair>>())
+            .collect::<Vec<_>>()
+            .into_iter()
+            .map(move |chunk| {
+                tokio::spawn(
+                    join_all(chunk.into_iter().map(move |pair| {
+                        cacher::cacher_run(pair.proxy, pair.server, Duration::from_millis(period))
+                            .or_else(|()| futures::future::ok::<(), std::io::Error>(()))
+                    })).into_future()
+                    .map(|_| {})
+                    .map_err(|_| {}),
+                )
+            }),
+    ).for_each(|_| futures::future::ok::<(), ()>(()));
 
-    pool.shutdown().wait().unwrap();
+    tokio::run(instance);
+
+    //pool.shutdown().wait().unwrap();
 }

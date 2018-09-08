@@ -416,7 +416,7 @@ impl Cacher {
                     Frame::SourceQuery(s) => Some((s, addr)),
                     Frame::None => None,
                 }).retry(|e: io::Error| {
-                    error!("Error inside codec {:?}. Retrying..", e);
+                    warn!("Error inside codec {:?}. Retrying..", e);
                     match e.kind() {
                         io::ErrorKind::Interrupted
                         | io::ErrorKind::ConnectionRefused
@@ -424,6 +424,7 @@ impl Cacher {
                         | io::ErrorKind::ConnectionAborted
                         | io::ErrorKind::NotConnected
                         | io::ErrorKind::Other
+                        | io::ErrorKind::InvalidData
                         | io::ErrorKind::BrokenPipe => RetryPolicy::Repeat,
                         io::ErrorKind::PermissionDenied => RetryPolicy::ForwardError(e),
                         _ => RetryPolicy::WaitRetry(Duration::from_millis(1)),
