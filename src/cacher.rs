@@ -34,7 +34,6 @@ use self::std::time::{Duration, Instant};
 pub struct Cacher {
     addr: SocketAddr,
     server_addr: SocketAddr,
-    banned_clients: FnvHashSet<SocketAddr>,
     cached_responses: FnvHashMap<ResponseHeader, bytes::Bytes>,
     challenge_numbers: LruCache<SocketAddrOrdered, i32>,
     clients_in_queue: FnvHashMap<ResponseHeader, FnvHashSet<SocketAddr>>,
@@ -88,7 +87,6 @@ impl Cacher {
         Cacher {
             addr,
             server_addr,
-            banned_clients: FnvHashSet::default(),
             cached_responses: FnvHashMap::default(),
             challenge_numbers: LruCache::with_expiry_duration_and_capacity(
                 Duration::from_secs(5),
@@ -110,11 +108,6 @@ impl Cacher {
     }
     fn ignore_request() -> impl Future<Item = (), Error = io::Error> + Send {
         futures::future::ok(())
-    }
-
-    fn ban_client(&mut self, addr: SocketAddr) -> impl Future<Item = (), Error = io::Error> {
-        self.banned_clients.insert(addr);
-        Cacher::ignore_request()
     }
 
     fn send(
@@ -166,26 +159,26 @@ impl Cacher {
                     debug!("Received {:?} from server.. So updating the cache.", header);
 
                     self.cached_responses.insert(header.clone(), data.clone());
-                    Quadro::A(self.exhaust_queue(&sender, &header, &data))
+                    Tripple::A(self.exhaust_queue(&sender, &header, &data))
                 } else {
                     info!(
-                        "Client {} is banned because it sent {:?}, but it isn't server {}",
+                        "Client {} is ignored because it sent {:?}, but it isn't server {}",
                         addr, header, self.server_addr
                     );
-                    Quadro::B(self.ban_client(*addr))
+                    Tripple::B(Cacher::ignore_request())
                 }
             }
             ResponseHeader::PlayersChallenge => {
                 if let Some(i) = data.as_i32() {
                     if *addr != self.server_addr {
                         info!(
-                            "Client {} is banned because it sent {:?}, but it isn't server {}",
+                            "Client {} is ignored because it sent {:?}, but it isn't server {}",
                             addr, header, self.server_addr
                         );
-                        Quadro::B(self.ban_client(*addr))
+                        Tripple::B(Cacher::ignore_request())
                     } else {
                         trace!("Using challenge id {} to request players from server", i);
-                        Quadro::C(Cacher::send(
+                        Tripple::C(Cacher::send(
                             sender,
                             (
                                 SourceQuery::with_request(
@@ -202,7 +195,7 @@ impl Cacher {
                         header,
                         addr
                     );
-                    Quadro::D(Cacher::ignore_request())
+                    Tripple::B(Cacher::ignore_request())
                 }
             }
         }
@@ -233,7 +226,7 @@ impl Cacher {
 
                     self.challenge_numbers
                         .insert(Into::<SocketAddrOrdered>::into(*addr), new_challenge_number);
-                    return Tripple::B(Cacher::send(
+                    return Either::A(Cacher::send(
                         sender,
                         (
                             SourceQuery::with_response(
@@ -254,7 +247,7 @@ impl Cacher {
                                 addr
                             );
 
-                            return Tripple::B(Cacher::send(
+                            return Either::A(Cacher::send(
                                 sender,
                                 (
                                     SourceQuery::with_response(
@@ -274,7 +267,7 @@ impl Cacher {
                             add_client_to_queue!(self, &ResponseHeader::Players, addr);
 
                             // Start to get cache from server
-                            return Tripple::B(Cacher::send(
+                            return Either::A(Cacher::send(
                                 sender,
                                 (
                                     SourceQuery::with_request(
@@ -290,18 +283,18 @@ impl Cacher {
                             "Ignoring request with invalid challenge number {}",
                             challenge
                         );
-                        return Tripple::C(Cacher::ignore_request());
+                        return Either::B(Cacher::ignore_request());
                     }
                 }
             }
             debug!(
-                    "Received invalid data for header {:?} from {}, so banning that bastard. This is data {:?} {}",
+                    "Received invalid data for header {:?} from {}, so ignoring that bastard. This is data {:?} {}",
                     RequestHeader::Players,
                     addr,
                     data,
                     data.len()
                 );
-            Tripple::A(self.ban_client(*addr))
+            Either::B(Cacher::ignore_request())
         }
     }
 
@@ -388,19 +381,15 @@ impl Cacher {
         sender: &Sender<(SourceQuery, SocketAddr)>,
         (query, addr): &(SourceQuery, SocketAddr),
     ) -> impl Future<Item = (), Error = io::Error> + Send {
-        if self.banned_clients.get(addr).is_none() {
             match query.header {
                 Header::Response(ref header) => {
-                    Tripple::A(self.process_response(sender, (header, &query.data, addr)))
+                    Either::A(self.process_response(sender, (header, &query.data, addr)))
                 }
                 Header::Request(ref header) => {
                     self.clear_cache_if_needed();
-                    Tripple::B(self.process_request(sender, (header, &query.data, addr)))
+                    Either::B(self.process_request(sender, (header, &query.data, addr)))
                 }
             }
-        } else {
-            Tripple::C(Cacher::ignore_request())
-        }
     }
 
     fn run(self) -> Box<Future<Item = (), Error = ()> + Send + 'static> {
