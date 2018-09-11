@@ -52,7 +52,7 @@ impl Encoder for FrameCodec {
     ) -> std::result::Result<(), Self::Error> {
         match item {
             Frame::SourceQuery(c) => SourceQueryCodec::default().encode(c, dst),
-            _ => Err(io::Error::new(io::ErrorKind::Other, "Can't parse header")),
+            Frame::None => Err(io::Error::new(io::ErrorKind::Other, "Can't send nothing")),
         }
     }
 }

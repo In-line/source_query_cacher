@@ -381,15 +381,15 @@ impl Cacher {
         sender: &Sender<(SourceQuery, SocketAddr)>,
         (query, addr): &(SourceQuery, SocketAddr),
     ) -> impl Future<Item = (), Error = io::Error> + Send {
-            match query.header {
-                Header::Response(ref header) => {
-                    Either::A(self.process_response(sender, (header, &query.data, addr)))
-                }
-                Header::Request(ref header) => {
-                    self.clear_cache_if_needed();
-                    Either::B(self.process_request(sender, (header, &query.data, addr)))
-                }
+        match query.header {
+            Header::Response(ref header) => {
+                Either::A(self.process_response(sender, (header, &query.data, addr)))
             }
+            Header::Request(ref header) => {
+                self.clear_cache_if_needed();
+                Either::B(self.process_request(sender, (header, &query.data, addr)))
+            }
+        }
     }
 
     fn run(self) -> Box<Future<Item = (), Error = ()> + Send + 'static> {
