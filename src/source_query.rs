@@ -8,7 +8,7 @@ use self::bytes::{BufMut, Bytes, BytesMut};
 use self::tokio_codec::{Decoder, Encoder};
 use enum_primitive::FromPrimitive;
 
-use util::BytesExt;
+use crate::util::BytesExt;
 
 use std::convert::From;
 use std::io;
@@ -169,11 +169,9 @@ mod tests {
         );
 
         let slice = [0xFF, 0xFF, 0xFF, 0xFF, ('Z' as u8), 1, 2, 3];
-        assert!(
-            SourceQueryCodec::default()
-                .decode(&mut BytesMut::from(&slice[..]))
-                .is_err()
-        );
+        assert!(SourceQueryCodec::default()
+            .decode(&mut BytesMut::from(&slice[..]))
+            .is_err());
     }
 
     #[test]
@@ -182,16 +180,15 @@ mod tests {
 
         let mut dst = BytesMut::new();
 
-        assert!(
-            SourceQueryCodec::default()
-                .encode(
-                    SourceQuery::with(
-                        Header::Response(ResponseHeader::Players),
-                        Bytes::from(&slice[5..])
-                    ),
-                    &mut dst
-                ).is_ok()
-        );
+        assert!(SourceQueryCodec::default()
+            .encode(
+                SourceQuery::with(
+                    Header::Response(ResponseHeader::Players),
+                    Bytes::from(&slice[5..])
+                ),
+                &mut dst
+            )
+            .is_ok());
         assert_eq!(&slice[..], dst.as_ref());
     }
 }

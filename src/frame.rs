@@ -4,13 +4,13 @@ extern crate bytes;
 extern crate std;
 extern crate tokio_codec;
 
-use source_query::{SourceQuery, SourceQueryCodec};
+use crate::source_query::{SourceQuery, SourceQueryCodec};
 use std::io;
 
 use self::bytes::BytesMut;
 use self::tokio_codec::{Decoder, Encoder};
 
-use util::ResultExt;
+use crate::util::ResultExt;
 
 #[derive(Debug)]
 pub enum Frame {

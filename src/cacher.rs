@@ -45,8 +45,8 @@ pub fn cacher_run(
     addr: SocketAddr,
     server_addr: SocketAddr,
     update_period: Duration,
-) -> Box<Future<Item = (), Error = ()> + Send + 'static> {
-    Box::new(FutureRetry::new(
+) -> impl Future<Item = (), Error = ()> + Send {
+    FutureRetry::new(
         move || {
             debug!("Restarting run...");
             Cacher::new(addr, server_addr, update_period).run()
@@ -55,7 +55,7 @@ pub fn cacher_run(
             debug!("Waiting 1 millis, because got an error {:?}", e);
             RetryPolicy::WaitRetry(Duration::from_millis(1))
         },
-    ))
+    )
 }
 
 macro_rules! add_client_to_queue {
@@ -145,7 +145,8 @@ impl Cacher {
                         ),
                     )
                 }),
-        ).map(|_| {})
+        )
+        .map(|_| {})
     }
 
     fn process_response(
@@ -368,7 +369,8 @@ impl Cacher {
                                     (SourceQuery::with_response(header, data), addr),
                                 )
                             },
-                        )).map(|_| {}),
+                        ))
+                        .map(|_| {}),
                     )
                 }
             }
@@ -383,10 +385,10 @@ impl Cacher {
     ) -> impl Future<Item = (), Error = io::Error> + Send {
         match query.header {
             Header::Response(ref header) => {
+                self.clear_cache_if_needed();
                 Either::A(self.process_response(sender, (header, &query.data, addr)))
             }
             Header::Request(ref header) => {
-                self.clear_cache_if_needed();
                 Either::B(self.process_request(sender, (header, &query.data, addr)))
             }
         }
@@ -404,7 +406,8 @@ impl Cacher {
                 .filter_map(|(frame, addr)| match frame {
                     Frame::SourceQuery(s) => Some((s, addr)),
                     Frame::None => None,
-                }).retry(|e: io::Error| {
+                })
+                .retry(|e: io::Error| {
                     warn!("Error inside codec {:?}. Retrying..", e);
                     match e.kind() {
                         io::ErrorKind::Interrupted
@@ -418,19 +421,23 @@ impl Cacher {
                         io::ErrorKind::PermissionDenied => RetryPolicy::ForwardError(e),
                         _ => RetryPolicy::WaitRetry(Duration::from_millis(1)),
                     }
-                }).for_each(move |client| {
+                })
+                .for_each(move |client| {
                     ref_self
                         .borrow_mut()
                         .process_query(&sender_channel, &client)
-                }).map_err(|e| {
+                })
+                .map_err(|e| {
                     error!("Error inside process query. {:?}", e);
-                }).join(
+                })
+                .join(
                     sender_channel_receiver
                         .map(|(query, addr)| (Frame::SourceQuery(query), addr))
                         .forward(sink.sink_map_err(|e| {
                             error!("Sink error inside receiver {}", e);
                         })),
-                ).map(|_| {
+                )
+                .map(|_| {
                     info!(
                         "Stopped\
                          ."

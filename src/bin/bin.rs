@@ -46,11 +46,7 @@ struct Options {
     #[structopt(short = "c", long = "chunk-size", default_value = "5")]
     /// Number of servers to dispatched on the same thread.
     chunk_size: usize,
-    #[structopt(
-        short = "l",
-        long = "list",
-        raw(required = "true", min_values = "1")
-    )]
+    #[structopt(short = "l", long = "list", raw(required = "true", min_values = "1"))]
     /// List of strings specified in "PROXY_IP:PORT SERVER_IP:PORT" format
     list: Vec<ServerClientPair>,
 }
@@ -116,12 +112,14 @@ fn main() {
                     join_all(chunk.into_iter().map(move |pair| {
                         cacher::cacher_run(pair.proxy, pair.server, Duration::from_millis(period))
                             .or_else(|()| futures::future::ok::<(), std::io::Error>(()))
-                    })).into_future()
+                    }))
+                    .into_future()
                     .map(|_| {})
                     .map_err(|_| {}),
                 )
             }),
-    ).for_each(|_| futures::future::ok::<(), ()>(()));
+    )
+    .for_each(|_| futures::future::ok::<(), ()>(()));
 
     tokio::run(instance);
 
