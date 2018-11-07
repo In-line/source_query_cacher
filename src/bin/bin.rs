@@ -18,7 +18,6 @@ extern crate futures;
 extern crate itertools;
 extern crate source_query_cacher;
 extern crate tokio;
-#[macro_use]
 extern crate structopt;
 
 use source_query_cacher::cacher;
