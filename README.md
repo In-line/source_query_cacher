@@ -27,4 +27,4 @@ Example usage:
 
 ### Credits
 
-Rust community! Especially [Rust Tokio](https://t.me/tokio_rust) and [Tokio](https://t.me/rustlang_ru) russian telegram chats for the great help and support ։)
+Rust community! Especially [Rust Tokio](https://t.me/tokio_rust) and [Rust](https://t.me/rustlang_ru) russian telegram chats for the great help and support ։)
