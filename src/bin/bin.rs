@@ -13,7 +13,7 @@
 //You should have received a copy of the GNU General Public License
 //along with source_query_cacher.  If not, see <https://www.gnu.org/licenses/>.
 
-extern crate env_logger;
+extern crate pretty_env_logger;
 extern crate futures;
 extern crate itertools;
 extern crate source_query_cacher;
@@ -92,7 +92,7 @@ impl std::str::FromStr for ServerClientPair {
 }
 
 fn main() {
-    env_logger::init();
+    pretty_env_logger::init();
     let options = Options::from_args();
 
     let period = options.update_period;
