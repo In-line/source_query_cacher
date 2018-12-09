@@ -89,6 +89,7 @@ environment:
 matrix:
   allow_failures:
     - channel: nightly
+  fast_finish: true
 
 # If you only care about stable channel build failures, uncomment the following line:
     #- channel: beta
