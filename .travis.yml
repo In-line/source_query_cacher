@@ -10,6 +10,9 @@ env:
   - PROJECT_NAME=source_query_cacher
 
 matrix:
+  allow_failures:
+    - rust: nightly
+  fast_finish: true
   include:
   # Android
 #  - env: TARGET=aarch64-linux-android 
