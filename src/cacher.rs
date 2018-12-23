@@ -48,7 +48,7 @@ pub fn cacher_run(
 ) -> impl Future<Item = (), Error = ()> + Send {
     FutureRetry::new(
         move || {
-            debug!("Restarting run...");
+            debug!("Restarting run... Cacher addr: {} Server addr: {}", addr, server_addr);
             Cacher::new(addr, server_addr, update_period).run()
         },
         |e| {
@@ -260,7 +260,8 @@ impl Cacher {
                             ));
                         } else {
                             trace!(
-                                "Requesting cache for a client, because it is empty for {:?}. Client {} will not be in queue",
+                                "Requesting cache for a client from server {}, because it is empty for {:?}. Client {} will not be in queue",
+                                self.server_addr,
                                 RequestHeader::Players,
                                 addr
                             );
@@ -324,7 +325,8 @@ impl Cacher {
 
                 if legacy.is_none() && new.is_none() {
                     trace!(
-                            "Requesting cache for a client, because it is empty for {:?}. Client {} will be in queue",
+                            "Requesting cache for a client from server {}, because it is empty for {:?}. Client {} will be in queue",
+                            self.server_addr,
                             header,
                             addr
                         );
@@ -337,13 +339,13 @@ impl Cacher {
                         (
                             SourceQuery::with_request(
                                 RequestHeader::Info,
-                                Bytes::from("Source Engine Query"),
+                                Bytes::from("Source Engine Query\0"),
                             ),
                             self.server_addr,
                         ),
                     ))
                 } else {
-                    let mut to_send: Vec<Option<(ResponseHeader, Bytes)>> = Vec::with_capacity(2);
+                    let mut to_send = Vec::with_capacity(2);
 
                     if let Some(legacy) = legacy {
                         trace!(
