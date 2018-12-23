@@ -3,6 +3,7 @@ name = "source_query_cacher"
 version = "0.1.6"
 authors = ["Alik Aslanyan <cplusplus256@gmail.com>"]
 license = "GPL-3.0"
+edition = "2018"
 
 [profile.release]
 lto = true
