@@ -1,6 +1,6 @@
 [package]
 name = "source_query_cacher"
-version = "0.1.6"
+version = "0.1.7"
 authors = ["Alik Aslanyan <cplusplus256@gmail.com>"]
 license = "GPL-3.0"
 edition = "2018"
@@ -26,3 +26,4 @@ structopt = "0.2.13"
 itertools = "0.8.0"
 net2 = "0.2.33"
 mio = "0.6.16"
+clone_all = "0.1.1"

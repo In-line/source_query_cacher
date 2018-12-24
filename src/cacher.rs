@@ -12,7 +12,7 @@ use self::futures_retry::{FutureRetry, RetryPolicy, StreamRetryExt};
 use self::tokio::net::UdpFramed;
 use self::tokio::net::UdpSocket;
 
-use self::futures::sync::mpsc::{channel, Sender};
+use self::futures::sync::mpsc::{unbounded, UnboundedSender};
 use self::tokio::prelude::future::*;
 use self::tokio::prelude::stream::*;
 use self::tokio::prelude::*;
@@ -111,7 +111,7 @@ impl Cacher {
     }
 
     fn send(
-        sender: &Sender<(SourceQuery, SocketAddr)>,
+        sender: &UnboundedSender<(SourceQuery, SocketAddr)>,
         item: (SourceQuery, SocketAddr),
     ) -> impl Future<Item = (), Error = io::Error> + Send {
         sender
@@ -123,13 +123,13 @@ impl Cacher {
 
     fn exhaust_queue(
         &mut self,
-        sender: &Sender<(SourceQuery, SocketAddr)>,
+        sender: &UnboundedSender<(SourceQuery, SocketAddr)>,
         header: &ResponseHeader,
         data: &Bytes,
     ) -> impl Future<Item = (), Error = io::Error> {
-        let sender = sender.clone();
-        let header = header.clone();
-        let data = data.clone();
+        clone_all!(sender, header, data);
+
+        trace!("Exhausting queue: {:?} for {} clients", header, self.clients_in_queue.len());
 
         join_all(
             self.clients_in_queue
@@ -151,7 +151,7 @@ impl Cacher {
 
     fn process_response(
         &mut self,
-        sender: &Sender<(SourceQuery, SocketAddr)>,
+        sender: &UnboundedSender<(SourceQuery, SocketAddr)>,
         (header, data, addr): (&ResponseHeader, &Bytes, &SocketAddr),
     ) -> impl Future<Item = (), Error = io::Error> + Send {
         match header {
@@ -162,7 +162,7 @@ impl Cacher {
                     self.cached_responses.insert(header.clone(), data.clone());
                     Tripple::A(self.exhaust_queue(&sender, &header, &data))
                 } else {
-                    info!(
+                    trace!(
                         "Client {} is ignored because it sent {:?}, but it isn't server {}",
                         addr, header, self.server_addr
                     );
@@ -172,7 +172,7 @@ impl Cacher {
             ResponseHeader::PlayersChallenge => {
                 if let Some(i) = data.as_i32() {
                     if *addr != self.server_addr {
-                        info!(
+                        trace!(
                             "Client {} is ignored because it sent {:?}, but it isn't server {}",
                             addr, header, self.server_addr
                         );
@@ -204,7 +204,7 @@ impl Cacher {
 
     fn process_players_request(
         &mut self,
-        sender: &Sender<(SourceQuery, SocketAddr)>,
+        sender: &UnboundedSender<(SourceQuery, SocketAddr)>,
         data: &Bytes,
         addr: &SocketAddr,
     ) -> impl Future<Item = (), Error = io::Error> + Send {
@@ -313,7 +313,7 @@ impl Cacher {
 
     fn process_request(
         &mut self,
-        sender: &Sender<(SourceQuery, SocketAddr)>,
+        sender: &UnboundedSender<(SourceQuery, SocketAddr)>,
         (header, data, addr): (&RequestHeader, &Bytes, &SocketAddr),
     ) -> impl Future<Item = (), Error = io::Error> + Send + 'static {
         self.gc();
@@ -382,15 +382,15 @@ impl Cacher {
 
     fn process_query(
         &mut self,
-        sender: &Sender<(SourceQuery, SocketAddr)>,
+        sender: &UnboundedSender<(SourceQuery, SocketAddr)>,
         (query, addr): &(SourceQuery, SocketAddr),
     ) -> impl Future<Item = (), Error = io::Error> + Send {
         match query.header {
             Header::Response(ref header) => {
-                self.clear_cache_if_needed();
                 Either::A(self.process_response(sender, (header, &query.data, addr)))
             }
             Header::Request(ref header) => {
+                self.clear_cache_if_needed();
                 Either::B(self.process_request(sender, (header, &query.data, addr)))
             }
         }
@@ -400,7 +400,7 @@ impl Cacher {
         let (sink, stream) =
             UdpFramed::new(UdpSocket::bind(&self.addr).unwrap(), FrameCodec::default()).split();
 
-        let (sender_channel, sender_channel_receiver) = channel(50);
+        let (sender_channel, sender_channel_receiver) = unbounded();
         let ref_self = RefCell::new(self);
 
         Box::new(
