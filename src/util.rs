@@ -139,7 +139,7 @@ where
 use self::std::net::SocketAddr;
 use std::cmp::{Ord, Ordering, PartialOrd};
 
-#[derive(PartialEq, Eq, Hash, Clone, Copy)]
+#[derive(PartialEq, Eq, Hash, Clone, Copy, Into, From)]
 pub struct SocketAddrOrdered(SocketAddr);
 
 impl PartialOrd for SocketAddrOrdered {
@@ -151,16 +151,5 @@ impl PartialOrd for SocketAddrOrdered {
 impl Ord for SocketAddrOrdered {
     fn cmp(&self, other: &Self) -> Ordering {
         (self.0.ip(), self.0.port()).cmp(&(other.0.ip(), other.0.port()))
-    }
-}
-impl From<SocketAddr> for SocketAddrOrdered {
-    fn from(s: SocketAddr) -> Self {
-        SocketAddrOrdered(s)
-    }
-}
-
-impl From<SocketAddrOrdered> for SocketAddr {
-    fn from(s: SocketAddrOrdered) -> Self {
-        s.0
     }
 }

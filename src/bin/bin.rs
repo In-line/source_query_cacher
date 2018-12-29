@@ -13,12 +13,12 @@
 //You should have received a copy of the GNU General Public License
 //along with source_query_cacher.  If not, see <https://www.gnu.org/licenses/>.
 
-extern crate pretty_env_logger;
 extern crate futures;
 extern crate itertools;
+extern crate pretty_env_logger;
 extern crate source_query_cacher;
-extern crate tokio;
 extern crate structopt;
+extern crate tokio;
 
 use source_query_cacher::cacher;
 use std::net::SocketAddr;
@@ -37,14 +37,32 @@ struct ServerClientPair {
     server: SocketAddr,
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(StructOpt, Debug, Clone)]
 struct Options {
     #[structopt(short = "p", long = "update-period", default_value = "1000")]
     /// Update period in milliseconds.
     update_period: u64,
+
     #[structopt(short = "c", long = "chunk-size", default_value = "5")]
     /// Number of servers to dispatched on the same thread.
     chunk_size: usize,
+
+    #[structopt(long = "challenge-number-expire", default_value = "1000")]
+    /// Challenge number expire time in milliseconds.
+    challenge_number_expire: u64,
+
+    #[structopt(long = "client-queue-expire", default_value = "1000")]
+    /// Client queue expire time in milliseconds.
+    client_queue_expire: u64,
+
+    #[structopt(
+        long = "ignore-unknown-challenge_numbers",
+        parse(try_from_str),
+        default_value = "false"
+    )]
+    /// Ignore unknown challenge numbers. Some monitorings violate protocol and don't request challenge numbers from server.
+    ignore_unknown_challenge_numbers: bool,
+
     #[structopt(short = "l", long = "list", raw(required = "true", min_values = "1"))]
     /// List of strings specified in "PROXY_IP:PORT SERVER_IP:PORT" format
     list: Vec<ServerClientPair>,
@@ -95,32 +113,40 @@ fn main() {
     pretty_env_logger::init();
     let options = Options::from_args();
 
-    let period = options.update_period;
+    let update_period = options.update_period;
+    let challenge_number_expire = options.challenge_number_expire;
+    let client_queue_expire = options.client_queue_expire;
+    let ignore_unknown_challenge_numbers = options.ignore_unknown_challenge_numbers;
 
-    let instance = iter_ok::<_, ()>(
-        options
-            .list
-            .iter()
-            .chunks(options.chunk_size)
-            .into_iter()
-            .map(|chunk| chunk.cloned().collect::<Vec<ServerClientPair>>())
-            .collect::<Vec<_>>()
-            .into_iter()
-            .map(move |chunk| {
-                tokio::spawn(
-                    join_all(chunk.into_iter().map(move |pair| {
-                        cacher::cacher_run(pair.proxy, pair.server, Duration::from_millis(period))
+    tokio::run(
+        iter_ok::<_, ()>(
+            options
+                .list
+                .iter()
+                .chunks(options.chunk_size)
+                .into_iter()
+                .map(|chunk| chunk.cloned().collect::<Vec<ServerClientPair>>())
+                .collect::<Vec<_>>()
+                .into_iter()
+                .map(move |chunk| {
+                    tokio::spawn(
+                        join_all(chunk.into_iter().map(move |pair| {
+                            cacher::cacher_run(
+                                pair.proxy,
+                                pair.server,
+                                Duration::from_millis(update_period),
+                                Duration::from_millis(challenge_number_expire),
+                                Duration::from_millis(client_queue_expire),
+                                ignore_unknown_challenge_numbers,
+                            )
                             .or_else(|()| futures::future::ok::<(), std::io::Error>(()))
-                    }))
-                    .into_future()
-                    .map(|_| {})
-                    .map_err(|_| {}),
-                )
-            }),
-    )
-    .for_each(|_| futures::future::ok::<(), ()>(()));
-
-    tokio::run(instance);
-
-    //pool.shutdown().wait().unwrap();
+                        }))
+                        .into_future()
+                        .map(|_| {})
+                        .map_err(|_| {}),
+                    )
+                }),
+        )
+        .for_each(|_| futures::future::ok::<(), ()>(())),
+    );
 }
