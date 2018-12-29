@@ -122,6 +122,9 @@ test_script:
   - rustup target add %TARGET% & exit 0 #
   - cargo test --target %TARGET%  --verbose %cargoflags%
   - cargo build --target %TARGET% --verbose %cargoflags%
+  - cargo test --release --target %TARGET%  --verbose %cargoflags%
+  - cargo build --release --target %TARGET% --verbose %cargoflags%
+
 
 
 before_deploy:
