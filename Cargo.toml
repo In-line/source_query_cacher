@@ -1,6 +1,6 @@
 [package]
 name = "source_query_cacher"
-version = "0.1.7"
+version = "0.1.8"
 authors = ["Alik Aslanyan <cplusplus256@gmail.com>"]
 license = "GPL-3.0"
 edition = "2018"
