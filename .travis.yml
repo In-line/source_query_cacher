@@ -80,8 +80,13 @@ install:
 
 script:
 - rustup target add $TARGET || true
+
 - cross build --verbose --target $TARGET
 - cross test --verbose --target $TARGET
+
+- cross build --release --verbose --target $TARGET
+- cross test --release --verbose --target $TARGET
+
 
 before_deploy:
 - cross build --release --target $TARGET
