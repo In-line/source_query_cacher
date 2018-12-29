@@ -10,6 +10,9 @@ extern crate tokio;
 #[macro_use]
 extern crate clone_all;
 
+#[macro_use]
+extern crate derive_more;
+
 pub mod cacher;
 mod frame;
 mod source_query;

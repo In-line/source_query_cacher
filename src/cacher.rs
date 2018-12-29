@@ -22,7 +22,7 @@ use super::source_query::{Header, RequestHeader, ResponseHeader, SourceQuery};
 use super::util::*;
 
 use self::bytes::Bytes;
-use self::fnv::{FnvHashMap, FnvHashSet};
+use self::fnv::FnvHashMap;
 use self::lru_time_cache::*;
 use self::rand::prelude::*;
 
@@ -36,20 +36,36 @@ pub struct Cacher {
     server_addr: SocketAddr,
     cached_responses: FnvHashMap<ResponseHeader, bytes::Bytes>,
     challenge_numbers: LruCache<SocketAddrOrdered, i32>,
-    clients_in_queue: FnvHashMap<ResponseHeader, FnvHashSet<SocketAddr>>,
+    clients_in_queue: FnvHashMap<ResponseHeader, LruCache<SocketAddrOrdered, ()>>,
     clock: Instant,
     update_period: Duration,
+    client_queue_expire_duration: Duration,
+    ignore_unknown_challenge_numbers: bool,
 }
 
 pub fn cacher_run(
     addr: SocketAddr,
     server_addr: SocketAddr,
     update_period: Duration,
+    challenge_number_expire_duration: Duration,
+    client_queue_expire_duration: Duration,
+    ignore_unknown_challenge_numbers: bool,
 ) -> impl Future<Item = (), Error = ()> + Send {
     FutureRetry::new(
         move || {
-            debug!("Restarting run... Cacher addr: {} Server addr: {}", addr, server_addr);
-            Cacher::new(addr, server_addr, update_period).run()
+            debug!(
+                "Restarting run... Cacher addr: {} Server addr: {}",
+                addr, server_addr
+            );
+            Cacher::new(
+                addr,
+                server_addr,
+                update_period,
+                challenge_number_expire_duration,
+                client_queue_expire_duration,
+                ignore_unknown_challenge_numbers,
+            )
+            .run()
         },
         |e| {
             debug!("Waiting 1 millis, because got an error {:?}", e);
@@ -64,12 +80,19 @@ macro_rules! add_client_to_queue {
             .clients_in_queue
             .get_mut($header)
             .unwrap()
-            .insert(*$addr);
+            .insert(Into::<SocketAddrOrdered>::into(*$addr), ());
     }};
 }
 
 impl Cacher {
-    fn new(addr: SocketAddr, server_addr: SocketAddr, update_period: Duration) -> Self {
+    fn new(
+        addr: SocketAddr,
+        server_addr: SocketAddr,
+        update_period: Duration,
+        challenge_number_expire_duration: Duration,
+        client_queue_expire_duration: Duration,
+        ignore_unknown_challenge_numbers: bool,
+    ) -> Self {
         let clients_in_queue = {
             let mut clients_in_queue = FnvHashMap::default();
 
@@ -78,7 +101,10 @@ impl Cacher {
                 ResponseHeader::NewInfo,
                 ResponseHeader::Players,
             ] {
-                clients_in_queue.insert(header.clone(), FnvHashSet::default());
+                clients_in_queue.insert(
+                    *header,
+                    LruCache::with_expiry_duration(client_queue_expire_duration),
+                );
             }
 
             clients_in_queue
@@ -88,24 +114,15 @@ impl Cacher {
             addr,
             server_addr,
             cached_responses: FnvHashMap::default(),
-            challenge_numbers: LruCache::with_expiry_duration_and_capacity(
-                Duration::from_secs(5),
-                1000,
-            ),
+            challenge_numbers: LruCache::with_expiry_duration(challenge_number_expire_duration),
             clients_in_queue,
             clock: Instant::now(),
+            client_queue_expire_duration,
             update_period,
+            ignore_unknown_challenge_numbers,
         }
     }
 
-    fn gc(&mut self) {
-        for (header, queue) in &mut self.clients_in_queue {
-            if queue.len() > 1000 {
-                info!("Clients queue for header {:?} seems to be full. Maybe server didn't respond? Removing {} clients. Server addr: {}", header, queue.len(), self.server_addr);
-                queue.clear();
-            }
-        }
-    }
     fn ignore_request() -> impl Future<Item = (), Error = io::Error> + Send {
         futures::future::ok(())
     }
@@ -129,19 +146,30 @@ impl Cacher {
     ) -> impl Future<Item = (), Error = io::Error> {
         clone_all!(sender, header, data);
 
-        trace!("Exhausting queue: {:?} for {} clients", header, self.clients_in_queue.len());
+        trace!(
+            "Exhausting queue: {:?} for {} clients",
+            header,
+            self.clients_in_queue.len()
+        );
 
         join_all(
             self.clients_in_queue
-                .insert(header.clone(), FnvHashSet::default())
+                .insert(
+                    header.clone(),
+                    LruCache::with_expiry_duration(self.client_queue_expire_duration),
+                )
                 .unwrap()
+                .iter()
+                .map(|(key, _)| key)
+                .cloned()
+                .collect::<Vec<SocketAddrOrdered>>()
                 .into_iter()
                 .map(move |client| {
                     Cacher::send(
                         &sender.clone(),
                         (
-                            SourceQuery::with(Header::Response(header.clone()), data.clone()),
-                            client,
+                            SourceQuery::with(Header::Response(header), data.clone()),
+                            client.into(),
                         ),
                     )
                 }),
@@ -159,12 +187,14 @@ impl Cacher {
                 if *addr == self.server_addr {
                     debug!("Received {:?} from server.. So updating the cache.", header);
 
-                    self.cached_responses.insert(header.clone(), data.clone());
+                    self.cached_responses.insert(*header, data.clone());
                     Tripple::A(self.exhaust_queue(&sender, &header, &data))
                 } else {
                     trace!(
                         "Client {} is ignored because it sent {:?}, but it isn't server {}",
-                        addr, header, self.server_addr
+                        addr,
+                        header,
+                        self.server_addr
                     );
                     Tripple::B(Cacher::ignore_request())
                 }
@@ -174,7 +204,9 @@ impl Cacher {
                     if *addr != self.server_addr {
                         trace!(
                             "Client {} is ignored because it sent {:?}, but it isn't server {}",
-                            addr, header, self.server_addr
+                            addr,
+                            header,
+                            self.server_addr
                         );
                         Tripple::B(Cacher::ignore_request())
                     } else {
@@ -202,7 +234,7 @@ impl Cacher {
         }
     }
 
-    fn process_players_request(
+    fn process_players_request_with_challenge_number(
         &mut self,
         sender: &UnboundedSender<(SourceQuery, SocketAddr)>,
         data: &Bytes,
@@ -227,7 +259,7 @@ impl Cacher {
 
                     self.challenge_numbers
                         .insert(Into::<SocketAddrOrdered>::into(*addr), new_challenge_number);
-                    return Either::A(Cacher::send(
+                    return Tripple::A(Cacher::send(
                         sender,
                         (
                             SourceQuery::with_response(
@@ -242,51 +274,19 @@ impl Cacher {
                         .remove(&Into::<SocketAddrOrdered>::into(*addr))
                 {
                     if etalon_challenge == challenge {
-                        if let Some(players) = self.cached_responses.get(&ResponseHeader::Players) {
-                            trace!(
-                                "Challenge number for a client {} is right. So sending him data!",
-                                addr
-                            );
-
-                            return Either::A(Cacher::send(
-                                sender,
-                                (
-                                    SourceQuery::with_response(
-                                        ResponseHeader::Players,
-                                        players.clone(),
-                                    ),
-                                    *addr,
-                                ),
-                            ));
-                        } else {
-                            trace!(
-                                "Requesting cache for a client from server {}, because it is empty for {:?}. Client {} will not be in queue",
-                                self.server_addr,
-                                RequestHeader::Players,
-                                addr
-                            );
-
-                            add_client_to_queue!(self, &ResponseHeader::Players, addr);
-
-                            // Start to get cache from server
-                            return Either::A(Cacher::send(
-                                sender,
-                                (
-                                    SourceQuery::with_request(
-                                        RequestHeader::Players,
-                                        Bytes::from_i32(-1),
-                                    ),
-                                    self.server_addr,
-                                ),
-                            ));
-                        }
+                        return Tripple::B(self.process_players_request(sender, addr));
                     } else {
                         trace!(
                             "Ignoring request with invalid challenge number {}",
                             challenge
                         );
-                        return Either::B(Cacher::ignore_request());
+                        self.challenge_numbers
+                            .remove(&Into::<SocketAddrOrdered>::into(*addr));
+                        return Tripple::C(Cacher::ignore_request());
                     }
+                } else if !self.ignore_unknown_challenge_numbers {
+                    trace!("Because ignoring unknown challenge numbers is inactive sending players to bastard {} with invalid challenge number: {}", addr, challenge);
+                    return Tripple::B(self.process_players_request(sender, addr));
                 }
             }
             debug!(
@@ -296,7 +296,46 @@ impl Cacher {
                     data,
                     data.len()
                 );
-            Either::B(Cacher::ignore_request())
+            Tripple::C(Cacher::ignore_request())
+        }
+    }
+
+    fn process_players_request(
+        &mut self,
+        sender: &UnboundedSender<(SourceQuery, SocketAddr)>,
+        addr: &SocketAddr,
+    ) -> impl Future<Item = (), Error = io::Error> + Send {
+        if let Some(players) = self.cached_responses.get(&ResponseHeader::Players) {
+            trace!(
+                "Challenge number for a client {} is right. So sending him data!",
+                addr
+            );
+
+            Cacher::send(
+                sender,
+                (
+                    SourceQuery::with_response(ResponseHeader::Players, players.clone()),
+                    *addr,
+                ),
+            )
+        } else {
+            trace!(
+                "Requesting cache for a client from server {}, because it is empty for {:?}. Client {} will be in queue",
+                self.server_addr,
+                RequestHeader::Players,
+                addr
+            );
+
+            add_client_to_queue!(self, &ResponseHeader::Players, addr);
+
+            // Start to get cache from server
+            Cacher::send(
+                sender,
+                (
+                    SourceQuery::with_request(RequestHeader::Players, Bytes::from_i32(-1)),
+                    self.server_addr,
+                ),
+            )
         }
     }
 
@@ -316,67 +355,72 @@ impl Cacher {
         sender: &UnboundedSender<(SourceQuery, SocketAddr)>,
         (header, data, addr): (&RequestHeader, &Bytes, &SocketAddr),
     ) -> impl Future<Item = (), Error = io::Error> + Send + 'static {
-        self.gc();
-
         match header {
             RequestHeader::Info => {
-                let legacy = self.cached_responses.get(&ResponseHeader::LegacyInfo);
-                let new = self.cached_responses.get(&ResponseHeader::NewInfo);
+                if *data != b"Source Engine Query\0"[..] {
+                    trace!("Info header request with wrong signature was send from client {}. Ignoring that bastard. Data: {:?}", addr, data);
+                    Quadro::D(Cacher::ignore_request())
+                } else {
+                    let legacy = self.cached_responses.get(&ResponseHeader::LegacyInfo);
+                    let new = self.cached_responses.get(&ResponseHeader::NewInfo);
 
-                if legacy.is_none() && new.is_none() {
-                    trace!(
+                    if legacy.is_none() && new.is_none() {
+                        trace!(
                             "Requesting cache for a client from server {}, because it is empty for {:?}. Client {} will be in queue",
                             self.server_addr,
                             header,
                             addr
                         );
 
-                    add_client_to_queue!(self, &ResponseHeader::NewInfo, addr);
-                    add_client_to_queue!(self, &ResponseHeader::LegacyInfo, addr);
+                        add_client_to_queue!(self, &ResponseHeader::NewInfo, addr);
+                        add_client_to_queue!(self, &ResponseHeader::LegacyInfo, addr);
 
-                    Tripple::A(Cacher::send(
-                        sender,
-                        (
-                            SourceQuery::with_request(
-                                RequestHeader::Info,
-                                Bytes::from("Source Engine Query\0"),
+                        Quadro::A(Cacher::send(
+                            sender,
+                            (
+                                SourceQuery::with_request(
+                                    RequestHeader::Info,
+                                    Bytes::from("Source Engine Query\0"),
+                                ),
+                                self.server_addr,
                             ),
-                            self.server_addr,
-                        ),
-                    ))
-                } else {
-                    let mut to_send = Vec::with_capacity(2);
-
-                    if let Some(legacy) = legacy {
-                        trace!(
-                            "Found {:?} info in cache, so sending it to {}",
-                            header,
-                            addr
-                        );
-                        to_send.push(Some((ResponseHeader::LegacyInfo, legacy.clone())));
-                    }
-
-                    if let Some(new) = new {
-                        trace!("Found {:?} in cache, so sending it to {}", header, addr);
-                        to_send.push(Some((ResponseHeader::NewInfo, new.clone())));
-                    }
-
-                    let sender = sender.clone();
-                    let addr = *addr;
-                    Tripple::B(
-                        join_all(to_send.into_iter().filter_map(|i| i).map(
-                            move |(header, data)| {
-                                Cacher::send(
-                                    &sender.clone(),
-                                    (SourceQuery::with_response(header, data), addr),
-                                )
-                            },
                         ))
-                        .map(|_| {}),
-                    )
+                    } else {
+                        let mut to_send = Vec::with_capacity(2);
+
+                        if let Some(legacy) = legacy {
+                            trace!(
+                                "Found {:?} info in cache, so sending it to {}",
+                                header,
+                                addr
+                            );
+                            to_send.push(Some((ResponseHeader::LegacyInfo, legacy.clone())));
+                        }
+
+                        if let Some(new) = new {
+                            trace!("Found {:?} in cache, so sending it to {}", header, addr);
+                            to_send.push(Some((ResponseHeader::NewInfo, new.clone())));
+                        }
+
+                        let sender = sender.clone();
+                        let addr = *addr;
+                        Quadro::B(
+                            join_all(to_send.into_iter().filter_map(|i| i).map(
+                                move |(header, data)| {
+                                    Cacher::send(
+                                        &sender.clone(),
+                                        (SourceQuery::with_response(header, data), addr),
+                                    )
+                                },
+                            ))
+                            .map(|_| {}),
+                        )
+                    }
                 }
             }
-            RequestHeader::Players => Tripple::C(self.process_players_request(sender, data, addr)),
+            RequestHeader::Players => {
+                Quadro::C(self.process_players_request_with_challenge_number(sender, data, addr))
+            }
         }
     }
 
