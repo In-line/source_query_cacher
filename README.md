@@ -4,21 +4,36 @@ Written in Rust, with love and care using Tokio framework. Should be as fast as 
 
 Program is intended to prevent some types of DoS attacks targeted to `SRCDS`/`HLDS` servers by caching some requests before they even arrive to the server. To function properly it needs iptables rule to intercept incoming packets.
 ```
-$ ./source_query_cacher --help
-source_query_cacher 0.1.0
+$ ./target/debug/bin --help
+source_query_cacher 0.1.X
 Alik Aslanyan <cplusplus256@gmail.com>
 
 USAGE:
-    source_query_cacher [OPTIONS] --list <list>...
+    bin [OPTIONS] --list <list>...
 
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
 
 OPTIONS:
-    -c, --chunk-size <chunk_size>          Number of servers to dispatched on the same thread. [default: 5]
-    -l, --list <list>...                   List of strings specified in "PROXY_IP:PORT SERVER_IP:PORT" format
-    -p, --update-period <update_period>    Update period in milliseconds. [default: 1000]
+        --challenge-number-expire <challenge_number_expire>
+            Challenge number expire time in milliseconds. [default: 1000]
+
+    -c, --chunk-size <chunk_size>
+            Number of servers to dispatched on the same thread. [default: 5]
+
+        --client-queue-expire <client_queue_expire>
+            Client queue expire time in milliseconds. [default: 1000]
+
+        --ignore-unknown-challenge_numbers <ignore_unknown_challenge_numbers>
+            Ignore unknown challenge numbers. Some monitorings violate protocol and don't request challenge numbers from
+            server. [default: false]
+    -l, --list <list>...
+            List of strings specified in "PROXY_IP:PORT SERVER_IP:PORT" format
+
+    -p, --update-period <update_period>
+            Update period in milliseconds. [default: 1000]
+
 
 ```
 
