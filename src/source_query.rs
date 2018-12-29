@@ -14,7 +14,7 @@ use std::convert::From;
 use std::io;
 
 enum_from_primitive! {
-    #[derive(Debug, PartialEq, Clone, Eq, Hash)]
+    #[derive(Debug, PartialEq, Clone, Copy, Eq, Hash)]
     pub enum ResponseHeader {
         LegacyInfo = 'm' as isize,
         NewInfo = 'I' as isize,
@@ -24,7 +24,7 @@ enum_from_primitive! {
 }
 
 enum_from_primitive! {
-    #[derive(Debug, PartialEq, Clone, Eq, Hash)]
+    #[derive(Debug, PartialEq, Clone, Copy, Eq, Hash)]
     pub enum RequestHeader {
         Info = 'T' as isize,
         Players = 'U' as isize, // Can require challenge number

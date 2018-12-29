@@ -11,7 +11,7 @@ lto = true
 [dependencies]
 tokio = "0.1.11"
 tokio-codec = "0.1.1"
-bytes = "0.4.10"
+bytes = "0.4.11"
 futures = "0.1.25"
 futures-retry = "0.3.0"
 enum_primitive = "0.1.1"
@@ -27,3 +27,4 @@ itertools = "0.8.0"
 net2 = "0.2.33"
 mio = "0.6.16"
 clone_all = "0.1.1"
+derive_more = "0.13.0"
