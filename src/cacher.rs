@@ -31,12 +31,18 @@ use self::std::io;
 use self::std::net::SocketAddr;
 use self::std::time::{Duration, Instant};
 
+use ref_thread_local::*;
+
+use rand_core::block::BlockRng;
+
 pub struct Cacher {
     addr: SocketAddr,
     server_addr: SocketAddr,
     cached_responses: FnvHashMap<ResponseHeader, bytes::Bytes>,
-    challenge_numbers: LruCache<SocketAddrOrdered, i32>,
+    cached_responses_up_to_date: FnvHashMap<RequestHeader, bool>,
+    challenge_numbers: LruCache<SocketAddrOrdered, LruCache<i32, ()>>,
     clients_in_queue: FnvHashMap<ResponseHeader, LruCache<SocketAddrOrdered, ()>>,
+    challenge_number_expire_duration: Duration,
     clock: Instant,
     update_period: Duration,
     client_queue_expire_duration: Duration,
@@ -110,6 +116,16 @@ impl Cacher {
             clients_in_queue
         };
 
+        let cached_responses_up_to_date = {
+            let mut cached_responses_up_to_date = FnvHashMap::default();
+
+            for header in &[RequestHeader::Info, RequestHeader::Players] {
+                cached_responses_up_to_date.insert(*header, false);
+            }
+
+            cached_responses_up_to_date
+        };
+
         Cacher {
             addr,
             server_addr,
@@ -119,29 +135,35 @@ impl Cacher {
             clock: Instant::now(),
             client_queue_expire_duration,
             update_period,
+            cached_responses_up_to_date,
             ignore_unknown_challenge_numbers,
+            challenge_number_expire_duration,
         }
     }
 
-    fn ignore_request() -> impl Future<Item = (), Error = io::Error> + Send {
+    #[inline]
+    fn ignore() -> impl Future<Item = (), Error = io::Error> + Send {
         futures::future::ok(())
     }
 
+    #[inline]
     fn send(
         sender: &UnboundedSender<(SourceQuery, SocketAddr)>,
         item: (SourceQuery, SocketAddr),
     ) -> impl Future<Item = (), Error = io::Error> + Send {
-        sender
-            .clone()
-            .send(item)
-            .map(|_| {})
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
+        futures::future::result(
+            sender
+                .clone()
+                .unbounded_send(item)
+                .map(|_| {})
+                .map_err(|e| io::Error::new(io::ErrorKind::Other, e)),
+        )
     }
 
     fn exhaust_queue(
         &mut self,
         sender: &UnboundedSender<(SourceQuery, SocketAddr)>,
-        header: &ResponseHeader,
+        header: ResponseHeader,
         data: &Bytes,
     ) -> impl Future<Item = (), Error = io::Error> {
         clone_all!(sender, header, data);
@@ -155,7 +177,7 @@ impl Cacher {
         join_all(
             self.clients_in_queue
                 .insert(
-                    header.clone(),
+                    header,
                     LruCache::with_expiry_duration(self.client_queue_expire_duration),
                 )
                 .unwrap()
@@ -188,7 +210,7 @@ impl Cacher {
                     debug!("Received {:?} from server.. So updating the cache.", header);
 
                     self.cached_responses.insert(*header, data.clone());
-                    Tripple::A(self.exhaust_queue(&sender, &header, &data))
+                    Tripple::A(self.exhaust_queue(&sender, *header, &data))
                 } else {
                     trace!(
                         "Client {} is ignored because it sent {:?}, but it isn't server {}",
@@ -196,7 +218,7 @@ impl Cacher {
                         header,
                         self.server_addr
                     );
-                    Tripple::B(Cacher::ignore_request())
+                    Tripple::B(Cacher::ignore())
                 }
             }
             ResponseHeader::PlayersChallenge => {
@@ -208,7 +230,7 @@ impl Cacher {
                             header,
                             self.server_addr
                         );
-                        Tripple::B(Cacher::ignore_request())
+                        Tripple::B(Cacher::ignore())
                     } else {
                         trace!("Using challenge id {} to request players from server", i);
                         Tripple::C(Cacher::send(
@@ -228,9 +250,41 @@ impl Cacher {
                         header,
                         addr
                     );
-                    Tripple::B(Cacher::ignore_request())
+                    Tripple::B(Cacher::ignore())
                 }
             }
+        }
+    }
+
+    fn register_new_challenge_number(&mut self, addr: SocketAddr, new_challenge_number: i32) {
+        let addr = Into::<SocketAddrOrdered>::into(addr);
+
+        if !self.challenge_numbers.contains_key(&addr) {
+            self.challenge_numbers.insert(
+                addr,
+                LruCache::with_expiry_duration(self.challenge_number_expire_duration),
+            );
+        }
+
+        if let Some(challenge_numbers) = self.challenge_numbers.get_mut(&addr) {
+            challenge_numbers.insert(new_challenge_number, ());
+        } else {
+            unreachable!()
+        }
+    }
+
+    fn remove_challenge_number(&mut self, addr: SocketAddr, challenge_number: i32) -> Option<bool> {
+        let addr = Into::<SocketAddrOrdered>::into(addr);
+        if let Some(challenge_numbers) = self.challenge_numbers.get_mut(&addr) {
+            let option = Some(challenge_numbers.remove(&challenge_number).is_some());
+
+            if challenge_numbers.is_empty() {
+                self.challenge_numbers.remove(&addr);
+            }
+
+            option
+        } else {
+            None
         }
     }
 
@@ -249,7 +303,10 @@ impl Cacher {
                     );
                     // Client requested new challenge number
                     let new_challenge_number = {
-                        let challenge_number = random::<i32>();
+                        ref_thread_local! {
+                            static managed RNG: BlockRng<rand_hc::Hc128Core> = BlockRng::new(rand_hc::Hc128Core::from_entropy());
+                        }
+                        let challenge_number = RNG.borrow_mut().gen::<i32>();
                         if challenge_number == -1 {
                             0
                         } else {
@@ -257,8 +314,8 @@ impl Cacher {
                         }
                     };
 
-                    self.challenge_numbers
-                        .insert(Into::<SocketAddrOrdered>::into(*addr), new_challenge_number);
+                    self.register_new_challenge_number(addr.clone(), new_challenge_number);
+
                     return Tripple::A(Cacher::send(
                         sender,
                         (
@@ -269,11 +326,8 @@ impl Cacher {
                             *addr,
                         ),
                     ));
-                } else if let Some(etalon_challenge) =
-                    self.challenge_numbers
-                        .remove(&Into::<SocketAddrOrdered>::into(*addr))
-                {
-                    if etalon_challenge == challenge {
+                } else if let Some(authorized) = self.remove_challenge_number(*addr, challenge) {
+                    if authorized {
                         return Tripple::B(self.process_players_request(sender, addr));
                     } else {
                         trace!(
@@ -282,7 +336,7 @@ impl Cacher {
                         );
                         self.challenge_numbers
                             .remove(&Into::<SocketAddrOrdered>::into(*addr));
-                        return Tripple::C(Cacher::ignore_request());
+                        return Tripple::C(Cacher::ignore());
                     }
                 } else if !self.ignore_unknown_challenge_numbers {
                     trace!("Because ignoring unknown challenge numbers is inactive sending players to bastard {} with invalid challenge number: {}", addr, challenge);
@@ -296,7 +350,7 @@ impl Cacher {
                     data,
                     data.len()
                 );
-            Tripple::C(Cacher::ignore_request())
+            Tripple::C(Cacher::ignore())
         }
     }
 
@@ -311,42 +365,51 @@ impl Cacher {
                 addr
             );
 
-            Cacher::send(
-                sender,
-                (
-                    SourceQuery::with_response(ResponseHeader::Players, players.clone()),
-                    *addr,
-                ),
+            Either::A(
+                Cacher::send(
+                    sender,
+                    (
+                        SourceQuery::with_response(ResponseHeader::Players, players.clone()),
+                        *addr,
+                    ),
+                )
+                .join(self.request_update_if_needed(sender, addr, RequestHeader::Players))
+                .map(|_| {}),
             )
         } else {
-            trace!(
-                "Requesting cache for a client from server {}, because it is empty for {:?}. Client {} will be in queue",
-                self.server_addr,
-                RequestHeader::Players,
-                addr
-            );
+            Either::B(self.request_from_server(sender, addr, RequestHeader::Players))
+        }
+    }
 
-            add_client_to_queue!(self, &ResponseHeader::Players, addr);
-
-            // Start to get cache from server
-            Cacher::send(
-                sender,
-                (
-                    SourceQuery::with_request(RequestHeader::Players, Bytes::from_i32(-1)),
-                    self.server_addr,
-                ),
+    fn make_cached_responses_obsolete(&mut self) {
+        if self.clock.elapsed() > self.update_period {
+            self.clock = Instant::now();
+            self.cached_responses_up_to_date
+                .iter_mut()
+                .for_each(|(_, i)| {
+                    *i = false;
+                });
+            debug!(
+                "Cache expired for {} after {:#?}. Seting flag for update...",
+                self.server_addr, self.update_period
             )
         }
     }
 
-    fn clear_cache_if_needed(&mut self) {
-        if self.clock.elapsed() > self.update_period {
-            self.clock = Instant::now();
-            self.cached_responses.clear();
-            debug!(
-                "Cache expired for {} after {:#?}. Clearing...",
-                self.server_addr, self.update_period
-            )
+    fn request_update_if_needed(
+        &mut self,
+        sender: &UnboundedSender<(SourceQuery, SocketAddr)>,
+        addr: &SocketAddr,
+        header: RequestHeader,
+    ) -> impl Future<Item = (), Error = io::Error> + Send + 'static {
+        if self
+            .cached_responses_up_to_date
+            .insert(header, true)
+            .unwrap()
+        {
+            Either::A(Cacher::ignore())
+        } else {
+            Either::B(self.request_from_server(sender, addr, header))
         }
     }
 
@@ -359,32 +422,13 @@ impl Cacher {
             RequestHeader::Info => {
                 if *data != b"Source Engine Query\0"[..] {
                     trace!("Info header request with wrong signature was send from client {}. Ignoring that bastard. Data: {:?}", addr, data);
-                    Quadro::D(Cacher::ignore_request())
+                    Quadro::D(Cacher::ignore())
                 } else {
                     let legacy = self.cached_responses.get(&ResponseHeader::LegacyInfo);
                     let new = self.cached_responses.get(&ResponseHeader::NewInfo);
 
                     if legacy.is_none() && new.is_none() {
-                        trace!(
-                            "Requesting cache for a client from server {}, because it is empty for {:?}. Client {} will be in queue",
-                            self.server_addr,
-                            header,
-                            addr
-                        );
-
-                        add_client_to_queue!(self, &ResponseHeader::NewInfo, addr);
-                        add_client_to_queue!(self, &ResponseHeader::LegacyInfo, addr);
-
-                        Quadro::A(Cacher::send(
-                            sender,
-                            (
-                                SourceQuery::with_request(
-                                    RequestHeader::Info,
-                                    Bytes::from("Source Engine Query\0"),
-                                ),
-                                self.server_addr,
-                            ),
-                        ))
+                        Quadro::A(self.request_from_server(sender, addr, RequestHeader::Info))
                     } else {
                         let mut to_send = Vec::with_capacity(2);
 
@@ -402,17 +446,18 @@ impl Cacher {
                             to_send.push(Some((ResponseHeader::NewInfo, new.clone())));
                         }
 
-                        let sender = sender.clone();
+                        let sender_join = sender.clone();
                         let addr = *addr;
                         Quadro::B(
                             join_all(to_send.into_iter().filter_map(|i| i).map(
                                 move |(header, data)| {
                                     Cacher::send(
-                                        &sender.clone(),
+                                        &sender_join.clone(),
                                         (SourceQuery::with_response(header, data), addr),
                                     )
                                 },
                             ))
+                            .join(self.request_update_if_needed(sender, &addr, RequestHeader::Info))
                             .map(|_| {}),
                         )
                     }
@@ -420,6 +465,54 @@ impl Cacher {
             }
             RequestHeader::Players => {
                 Quadro::C(self.process_players_request_with_challenge_number(sender, data, addr))
+            }
+        }
+    }
+
+    fn request_from_server(
+        &mut self,
+        sender: &UnboundedSender<(SourceQuery, SocketAddr)>,
+        addr: &SocketAddr,
+        header: RequestHeader,
+    ) -> impl Future<Item = (), Error = io::Error> + Send {
+        match header {
+            RequestHeader::Info => {
+                trace!(
+                    "Requesting cache for a client from server {}, because it is empty for players. Client {} will be in queue",
+                    self.server_addr,
+                    addr
+                );
+                add_client_to_queue!(self, &ResponseHeader::NewInfo, addr);
+                add_client_to_queue!(self, &ResponseHeader::LegacyInfo, addr);
+                Cacher::send(
+                    sender,
+                    (
+                        SourceQuery::with_request(
+                            RequestHeader::Info,
+                            Bytes::from("Source Engine Query\0"),
+                        ),
+                        self.server_addr,
+                    ),
+                )
+            }
+            RequestHeader::Players => {
+                trace!(
+                    "Requesting cache for a client from server {}, because it is empty for {:?}. Client {} will be in queue",
+                    self.server_addr,
+                    RequestHeader::Players,
+                    addr
+                );
+
+                add_client_to_queue!(self, &ResponseHeader::Players, addr);
+
+                // Start to get cache from server
+                Cacher::send(
+                    sender,
+                    (
+                        SourceQuery::with_request(RequestHeader::Players, Bytes::from_i32(-1)),
+                        self.server_addr,
+                    ),
+                )
             }
         }
     }
@@ -434,7 +527,7 @@ impl Cacher {
                 Either::A(self.process_response(sender, (header, &query.data, addr)))
             }
             Header::Request(ref header) => {
-                self.clear_cache_if_needed();
+                self.make_cached_responses_obsolete();
                 Either::B(self.process_request(sender, (header, &query.data, addr)))
             }
         }
