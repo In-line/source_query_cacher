@@ -7,12 +7,13 @@ edition = "2018"
 
 [profile.release]
 lto = true
+codegen-units = 1
 
 [dependencies]
-tokio = "0.1.11"
+tokio = "0.1.18"
 tokio-codec = "0.1.1"
-bytes = "0.4.11"
-futures = "0.1.25"
+bytes = "0.4.12"
+futures = "0.1.26"
 futures-retry = "0.3.0"
 enum_primitive = "0.1.1"
 num = "0.2.0"
@@ -20,11 +21,13 @@ log = "0.4.6"
 pretty_env_logger="0.3.0"
 byteorder = "1.2.7"
 fnv = "1.0.6"
-rand = "0.6"
+rand = "0.6.5"
+rand_hc = "0.1.0"
+rand_core = "0.4.0"
 lru_time_cache = "0.9.0"
 structopt = "0.2.13"
 itertools = "0.8.0"
 net2 = "0.2.33"
-mio = "0.6.16"
 clone_all = "0.1.1"
 derive_more = "0.14.0"
+ref_thread_local = "0.0"

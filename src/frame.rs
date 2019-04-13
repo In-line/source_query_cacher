@@ -21,12 +21,6 @@ pub enum Frame {
 #[derive(Debug, Default)]
 pub struct FrameCodec;
 
-impl FrameCodec {
-    pub fn new() -> FrameCodec {
-        FrameCodec {}
-    }
-}
-
 /// Bypasses some inconveniences while working with UDP.
 impl Decoder for FrameCodec {
     type Item = Frame;
