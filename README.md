@@ -1,4 +1,5 @@
 # source_query_cacher [![Build Status](https://travis-ci.org/In-line/source_query_cacher.svg?branch=master)](https://travis-ci.org/In-line/source_query_cacher) [![Build status](https://ci.appveyor.com/api/projects/status/090sue7e0hyspsk6/branch/master?svg=true)](https://ci.appveyor.com/project/In-line/source-query-cacher/branch/master)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FIn-line%2Fsource_query_cacher.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FIn-line%2Fsource_query_cacher?ref=badge_shield)
 
 Written in Rust, with love and care using Tokio framework. Should be as fast as hell, or slow as hell. I don't know, but you should try to use it anyway :)
 
@@ -45,3 +46,7 @@ Example usage:
 ### Credits
 
 Rust community! Especially [Rust Tokio](https://t.me/tokio_rust) and [Rust](https://t.me/rustlang_ru) russian telegram chats for the great help and support ։)
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FIn-line%2Fsource_query_cacher.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FIn-line%2Fsource_query_cacher?ref=badge_large)
