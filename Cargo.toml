@@ -12,7 +12,7 @@ codegen-units = 1
 [dependencies]
 tokio = "0.1.18"
 tokio-codec = "0.1.1"
-bytes = "0.4.12"
+bytes = "0.5.2"
 futures = "0.1.26"
 futures-retry = "0.3.0"
 enum_primitive = "0.1.1"
