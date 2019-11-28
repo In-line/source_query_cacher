@@ -10,7 +10,7 @@ lto = true
 codegen-units = 1
 
 [dependencies]
-tokio = "0.1.18"
+tokio = "0.2.1"
 tokio-codec = "0.1.1"
 bytes = "0.4.12"
 futures = "0.1.26"
